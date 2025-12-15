@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sistema Premium S77</title>
+
+<link rel="icon" href="icono.png" type="image/png">
+<link rel="apple-touch-icon" href="icono.png">
+
+<style>
+body{
+  font-family:Arial, sans-serif;
+  background:black;
+  color:#fff;
+  padding:20px;
+  text-align:center;
+}
+.panel{
+  background:black;
+  color:#fff;
+  padding:15px;
+  border-radius:12px;
+  max-width:650px;
+  margin:15px auto;
+}
+.hidden{display:none;}
+input, select, button{
+  padding:10px;
+  font-family:Arial, sans-serif;
+  border-radius:8px;
+  border:none;
+}
+button{
+  cursor:pointer;
+  margin-top:10px;
+  text-transform:uppercase;
+  font-weight:bold;
+  color:#fff;
+  background:maroon;
+}
+.inputs{
+  display:grid;
+  grid-template-columns:repeat(8,60px);
+  gap:10px;
+  justify-content:center;
+}
+.inputs input{
+  width:60px;
+  height:60px;
+  font-size:26px;
+  font-weight:bold;
+  text-align:center;
+  border:6px solid red;
+  background:white;
+  color:black;
+}
+.inputs input:first-child{
+  background:#00bfff;
+}
+@keyframes pulso{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.2);}
+  100%{transform:scale(1);}
+}
+.nuevo-cuadrado{
+  width:60px;
+  height:60px;
+  font-size:30px;
+  font-weight:bold;
+  text-align:center;
+  border:6px solid red;
+  margin:10px auto;
+  display:block;
+  border-radius:8px;
+  background:#00bfff;
+  color:black;
+}
+.favoritos, .explosivos{
+  width:200px;
+  min-height:60px;
+  padding:15px;
+  border-radius:8px;
+  display:block;
+  font-weight:bold;
+  text-align:center;
+  margin:0 auto;
+  border:6px solid white;
+}
+.favoritos{
+  background:green;
+  font-size:26px;
+}
+.explosivos{
+  background:red;
+  font-size:50px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎡 Sistema Premium S77</h1>
+
+<div class="panel hidden" id="s77">
+  <h2>ÚLTIMOS 16 NÚMEROS</h2>
+  <div class="inputs">
+    <input><input><input><input><input><input><input><input>
+    <input><input><input><input><input><input><input><input>
+  </div>
+
+  <h3>NUEVO NÚMERO</h3>
+  <input id="nuevoNumero" type="number" class="nuevo-cuadrado">
+  <button id="reiniciar">REINICIAR</button>
+
+  <h3>FAVORITOS</h3>
+  <div class="favoritos" id="favoritos">—</div>
+
+  <h3>EXPLOSIVOS</h3>
+  <div class="explosivos" id="explosivos">—</div>
+</div>
+
+<script>
+// ================= S77 =================
+
+// LOTES DE 3 (ACTUALIZADO)
+const lotes3=[
+ [0,13,28],[1,18,36],[1,25,34],[2,10,35],[2,10,22],
+ [3,18,19],[4,10,22],[6,17,28],[7,19,27],[7,9,32],
+ [8,33,28],[8,26,35],[9,14,30],[9,1,30],[9,25,36],
+ [10,26,24],[11,22,33],[17,20,35],
+ [7,3,30] // ✅ LOTE AGREGADO
+];
+
+// LOTES DE 4
+const lotes4=[
+ [3,18,24,26],[4,11,15,29],[5,12,16,21],
+ [6,10,13,31],[14,23,25,16]
+];
+
+const cas=[...document.querySelectorAll('.inputs input')];
+const nuevo=document.getElementById('nuevoNumero');
+const fav=document.getElementById('favoritos');
+const exp=document.getElementById('explosivos');
+const rein=document.getElementById('reiniciar');
+
+let ultimos16=[];
+
+function calcular(){
+  let cnt={};
+
+  function sumar(n){
+    cnt[n]=(cnt[n]||0)+1;
+  }
+
+  lotes3.forEach(l=>{
+    let presentes=l.filter(n=>ultimos16.includes(n));
+    if(presentes.length===2){
+      l.forEach(n=>{
+        if(!presentes.includes(n)) sumar(n);
+      });
+    }
+  });
+
+  lotes4.forEach(l=>{
+    let presentes=l.filter(n=>ultimos16.includes(n));
+    if(presentes.length===2){
+      l.forEach(n=>{
+        if(!presentes.includes(n)) sumar(n);
+      });
+    }
+  });
+
+  let f=[], e=[];
+  for(let n in cnt){
+    cnt[n]>1 ? e.push(n) : f.push(n);
+  }
+
+  fav.innerText=f.length?f.join(", "):"—";
+  exp.innerText=e.length?e.join(", "):"—";
+}
+
+nuevo.onchange=()=>{
+  let v=parseInt(nuevo.value);
+  if(isNaN(v)) return;
+
+  ultimos16.unshift(v);
+  if(ultimos16.length>16) ultimos16.pop();
+
+  cas.forEach((c,i)=>c.value=ultimos16[i]??"");
+
+  cas[0].style.animation="pulso 0.3s";
+  setTimeout(()=>cas[0].style.animation="",300);
+
+  nuevo.value="";
+  calcular();
+};
+
+rein.onclick=()=>{
+  ultimos16=[];
+  cas.forEach(c=>c.value="");
+  fav.innerText="—";
+  exp.innerText="—";
+};
+
+document.getElementById("s77").classList.remove("hidden");
+</script>
+
+</body>
+</html>
