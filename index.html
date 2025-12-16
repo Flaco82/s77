@@ -4,16 +4,9 @@
 <meta charset="UTF-8">
 <title>Sistema Premium S77</title>
 
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
+<!-- ÍCONO -->
 <link rel="icon" href="icono.png">
 <link rel="apple-touch-icon" href="icono.png">
-
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
-</script>
 
 <style>
 body{
@@ -28,7 +21,7 @@ body{
   color:#fff;
   padding:15px;
   border-radius:12px;
-  max-width:450px;
+  max-width:480px;
   margin:15px auto;
 }
 .hidden{display:none;}
@@ -78,7 +71,7 @@ button{
   background:#7fd3ff;
 }
 .favoritos, .explosivos{
-  width:200px;
+  width:220px;
   min-height:60px;
   padding:15px;
   border-radius:8px;
@@ -103,7 +96,32 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<div class="panel">
+<!-- LOGIN -->
+<div class="panel" id="login">
+  <h2>INGRESAR CLAVE</h2>
+  <input id="claveInput" placeholder="Clave">
+  <br>
+  <button onclick="login()">Ingresar</button>
+  <p id="error" style="color:red;"></p>
+</div>
+
+<!-- PANEL ADMIN -->
+<div class="panel hidden" id="adminPanel">
+  <h2>ADMINISTRADOR</h2>
+  <input id="nuevaClave" placeholder="Clave usuario">
+  <select id="duracion">
+    <option value="1">1 día</option>
+    <option value="7">7 días</option>
+    <option value="30">30 días</option>
+  </select>
+  <br>
+  <button onclick="crearUsuario()">Crear usuario</button>
+  <h3>Usuarios activos</h3>
+  <div id="listaUsuarios"></div>
+</div>
+
+<!-- SISTEMA -->
+<div class="panel hidden" id="s77">
   <h2>ÚLTIMOS 16 NÚMEROS</h2>
   <div class="inputs">
     <input disabled><input disabled><input disabled><input disabled>
@@ -125,7 +143,63 @@ button{
 </div>
 
 <script>
-// === LOTES ===
+// ===== SEGURIDAD =====
+const ADMIN="ADMIN-1407";
+let usuarios=JSON.parse(localStorage.getItem("usuarios")||"{}");
+
+function login(){
+  const clave=document.getElementById("claveInput").value;
+  const ahora=Date.now();
+
+  if(clave===ADMIN){
+    mostrarSistema(true);
+    return;
+  }
+  if(!usuarios[clave]){
+    error("Clave inválida");
+    return;
+  }
+  if(ahora>usuarios[clave]){
+    error("Acceso vencido");
+    return;
+  }
+  mostrarSistema(false);
+}
+
+function mostrarSistema(admin){
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("s77").classList.remove("hidden");
+  if(admin){
+    document.getElementById("adminPanel").classList.remove("hidden");
+    renderUsuarios();
+  }
+}
+
+function error(txt){
+  document.getElementById("error").innerText=txt;
+}
+
+function crearUsuario(){
+  const c=document.getElementById("nuevaClave").value;
+  const d=parseInt(document.getElementById("duracion").value);
+  if(!c) return;
+  usuarios[c]=Date.now()+d*86400000;
+  localStorage.setItem("usuarios",JSON.stringify(usuarios));
+  document.getElementById("nuevaClave").value="";
+  renderUsuarios();
+}
+
+function renderUsuarios(){
+  let h="",a=Date.now();
+  for(let u in usuarios){
+    if(usuarios[u]>a){
+      h+=`<p>${u} → vence ${new Date(usuarios[u]).toLocaleString()}</p>`;
+    }
+  }
+  document.getElementById("listaUsuarios").innerHTML=h||"—";
+}
+
+// ===== S77 =====
 const lotes3=[
  [0,13,28],[1,18,36],[1,25,34],[2,10,35],[2,10,22],
  [3,18,19],[4,10,22],[6,17,28],[7,19,27],
